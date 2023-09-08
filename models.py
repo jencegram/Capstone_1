@@ -3,10 +3,12 @@ from extensions import db
 # User Model
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(255), unique=True, nullable=False)
-    password = db.Column(db.String(255), nullable=False)  # Ensure this is hashed before storing!
-    email = db.Column(db.String(255), unique=True, nullable=False)
-    moodboards = db.relationship('Moodboard', backref='user', lazy=True)  # This will allow user.moodboards querying
+    name = db.Column(db.String(255), nullable=False, unique=True)
+    password = db.Column(db.String(255), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    moodboards = db.relationship('Moodboard', backref='user', lazy=True)
+
+
 
 # Mood Model
 class Mood(db.Model):
