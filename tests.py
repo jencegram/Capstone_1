@@ -13,7 +13,7 @@ class MoodboardTests(unittest.TestCase):
         # Disable CSRF for testing
         app.config["WTF_CSRF_ENABLED"] = False
         app.config["TESTING"] = True
-        app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql:///moodboard_test"
+        app.config["SQLALCHEMY_DATABASE_URL"] = "postgresql:///moodboard_test"
 
         db.create_all()
 
