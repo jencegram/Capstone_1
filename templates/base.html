@@ -1,23 +1,28 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title>{% block title %}Title{% endblock %}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moodboard App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
+
 <body>
     <header>
         <h1>Moodboard</h1>
     </header>
 
-    <nav>
-      <!-- Navigation links -->
-      <a href="{{ url_for('index') }}">Home</a> |
-      {% if 'user_id' in session %}
-          <a href="{{ url_for('dashboard') }}">Dashboard</a> |
-          <a href="{{ url_for('logout') }}">Logout</a>
-      {% else %}
-          <a href="{{ url_for('register') }}">Register</a> |
-          <a href="{{ url_for('login') }}">Login</a>
-      {% endif %}
+    <nav class="nav-bar">
+        <!-- Navigation links -->
+        <a href="{{ url_for('index') }}">Home</a> |
+        {% if 'user_id' in session %}
+        <a href="{{ url_for('dashboard') }}">Dashboard</a> |
+        <a href="{{ url_for('logout') }}">Logout</a>
+        {% else %}
+        <a href="{{ url_for('register') }}">Register</a> |
+        <a href="{{ url_for('login') }}">Login</a>
+        {% endif %}
     </nav>
 
     <main>
@@ -25,4 +30,5 @@
     </main>
 
 </body>
+
 </html>

@@ -1,0 +1,19 @@
+
+.selected-image {
+    border: 2px solid green; 
+}
+
+.btn-danger {
+    background-color: red;
+    color: white;
+}
+
+.btn-danger-black-text {
+    background-color: red;
+    color: black;
+}
+
+.btn-success {
+    background-color: green;
+    color: white;
+}

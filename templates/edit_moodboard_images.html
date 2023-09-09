@@ -1,28 +1,58 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Edit Selected Images for Moodboard: {{ moodboard.title }}</h2>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/edit_moodboard_images.css') }}">
 
-<form method="post">
-    {{ form.hidden_tag() }}
+<div class="container mt-5">
+    <h2>Edit Moodboard</h2>
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
 
-    <h3>Selected Images:</h3>
-    <div class="row">
-      {% for photo in selected_images %}
-      <div class="col-md-4 mb-4">
-          <div class="card">
-              <img src="{{ photo.photo_url }}" class="card-img-top" alt="{{ photo.description }}">
-              <div class="card-body">
-                  <h5 class="card-title">{{ photo.description }}</h5>
-              </div>
-          </div>
-      </div>
-      {% endfor %}
-      
-    </div>
+        <div class="form-group">
+            <label for="{{ form.title.id }}">Title:</label>
+            {{ form.title(class="form-control") }}
+        </div>
 
-    <input type="submit" value="Save Changes" class="btn btn-primary">
-</form>
+        <div class="form-group">
+            <label for="{{ form.description.id }}">Description:</label>
+            {{ form.description(class="form-control") }}
+        </div>
 
-  
+        <div class="form-group">
+            <label for="{{ form.mood.id }}">Mood:</label>
+            {{ form.mood(class="form-control") }}
+        </div>
+
+        <h4>Current Images:</h4>
+        <div class="image-gallery">
+            {% for image in selected_images %}
+            <div class="image-container">
+                <img src="{{ image.photo_url }}" alt="Image" width="250" height="250">
+
+                <a href="{{ url_for('delete_image', moodboard_id=moodboard.id, photo_id=image.id) }}"
+                    class="btn btn-danger btn-sm delete-button">Delete</a>
+                <input type="hidden" name="selected_images[]" value="{{ image.photo_url }}">
+            </div>
+            {% endfor %}
+
+        </div>
+
+        <h4>Add More Images:</h4>
+        <div id="search-container">
+            <input type="text" id="search-query" placeholder="Search Unsplash for images" class="form-control mb-2">
+            <button type="button" id="search-button" class="btn btn-primary">Search</button>
+        </div>
+        <div id="search-results"></div>
+
+        <button type="submit" class="btn btn-success mt-3">Update Moodboard</button>
+    </form>
+
+    
+    <a href="{{ url_for('delete_moodboard', moodboard_id=moodboard.id) }}" class="btn btn-danger-black-text mt-3">Delete
+        Moodboard</a>
+
+
+</div>
+
+<script src="{{ url_for('static', filename='js/edit_moodboard_images.js') }}"></script>
 {% endblock %}

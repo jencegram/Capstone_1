@@ -1,0 +1,4 @@
+  /* Highlight style for selected images */
+  .selected-image {
+      border: 2px solid blue; /* Blue border for selected images */
+  }

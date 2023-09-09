@@ -8,11 +8,12 @@
 <h3>Selected Images:</h3>
 <div class="row">
   {% for image in selected_images %}
-    <img src="{{ image.photo_url }}" alt="Moodboard Image">
+  <img src="{{ image.photo_url }}" alt="Moodboard Image" width="250" height="250">
   {% endfor %}
 
 
 </div>
 
-<a href="{{ url_for('edit_moodboard_images', moodboard_id=moodboard.id) }}">Edit Selected Images</a>
+<a href="{{ url_for('edit_moodboard', moodboard_id=moodboard.id) }}">Edit Selected Images</a>
+
 {% endblock %}

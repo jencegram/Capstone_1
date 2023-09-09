@@ -1,22 +1,21 @@
-
 {% extends "base.html" %}
 
 {% block title %}
-    Register
+Register
 {% endblock %}
 
 {% block content %}
-    <form method="post">
-        {{ form.hidden_tag() }}
-        <label for="name">{{ form.name.label }}</label>
-        {{ form.name() }}
-        <br>
-        <label for="email">{{ form.email.label }}</label>
-        {{ form.email() }}
-        <br>
-        <label for="password">{{ form.password.label }}</label>
-        {{ form.password() }}
-        <br>
-        {{ form.submit() }}
-    </form>
+<form method="post">
+    {{ form.hidden_tag() }}
+    <label for="name">{{ form.name.label }}</label>
+    {{ form.name() }}
+    <br>
+    <label for="email">{{ form.email.label }}</label>
+    {{ form.email() }}
+    <br>
+    <label for="password">{{ form.password.label }}</label>
+    {{ form.password() }}
+    <br>
+    {{ form.submit() }}
+</form>
 {% endblock %}

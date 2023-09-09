@@ -2,97 +2,125 @@ import os
 import requests
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
-from flask import Flask, render_template, url_for, request, flash, session, redirect, jsonify
+from flask import (
+    Flask,
+    render_template,
+    url_for,
+    request,
+    flash,
+    session,
+    redirect,
+    jsonify,
+)
 from extensions import db
 from models import User, Moodboard, Mood, Photo
 from forms import RegistrationForm, CreateMoodboardForm
 from flask_bcrypt import Bcrypt
+from decouple import config
 
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
-app.config['SECRET_KEY'] = '5300749'
+app.config["SECRET_KEY"] = config("FLASK_SECRET_KEY")
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///moodboard_db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  
+app.config["SQLALCHEMY_DATABASE_URI"] = config("DATABASE_URI")
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
 
-@app.route('/')
+
+@app.route("/")
 def index():
-    if 'user_id' in session:
-        return render_template('home.html', message="Welcome!")
+    """Shows the welcome page. If logged in: shows the welcome page. Otherwise: shows the login/signup page."""
+    if "user_id" in session:
+        return render_template("home.html", message="Welcome!")
     else:
-        return render_template('index.html')
+        return render_template("index.html")
 
-@app.route('/home')
+
+@app.route("/home")
 def home():
-    if 'user_id' not in session:
+    """Displays the homepage. If not logged in, redirects to login"""
+    if "user_id" not in session:
         flash("Please log in first!", "danger")
-        return redirect(url_for('login'))
-    return render_template('home.html', message="Welcome!")
+        return redirect(url_for("login"))
+    return render_template("home.html", message="Welcome!")
 
-@app.route('/dashboard')
+
+@app.route("/dashboard")
 def dashboard():
-    if 'user_id' not in session:
+    """User's dashboard. Shows all moodboards created by user. Redirects if not authenticated."""
+    if "user_id" not in session:
         flash("Please log in first!", "danger")
-        return redirect(url_for('login'))
-    
-    user = User.query.get(session['user_id'])
-    
+        return redirect(url_for("login"))
+
+    user = User.query.get(session["user_id"])
+
     # Fetch all moodboards created by the logged-in user
-    moodboards = Moodboard.query.filter_by(user_id=session['user_id']).all()
+    moodboards = Moodboard.query.filter_by(user_id=session["user_id"]).all()
 
-    return render_template('dashboard.html', user_name=user.name, moodboards=moodboards)
+    return render_template("dashboard.html", user_name=user.name, moodboards=moodboards)
 
 
-@app.route('/register', methods=['GET', 'POST'])
+@app.route("/register", methods=["GET", "POST"])
 def register():
+    """Handles user registration."""
     form = RegistrationForm()
     if form.validate_on_submit():
         # Check if email already exists
         existing_user = User.query.filter_by(email=form.email.data).first()
         if existing_user:
             error_message = "Email already taken. Please choose a different email."
-            return render_template('error.html', error_message=error_message)
-        
-        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        new_user = User(name=form.name.data, email=form.email.data, password=hashed_password)
+            return render_template("error.html", error_message=error_message)
+
+        hashed_password = bcrypt.generate_password_hash(form.password.data).decode(
+            "utf-8"
+        )
+        new_user = User(
+            name=form.name.data, email=form.email.data, password=hashed_password
+        )
         try:
             db.session.add(new_user)
             db.session.commit()
-            session['user_id'] = new_user.id  # Log the user in by saving their id in session
+            session[
+                "user_id"
+            ] = new_user.id  # Log the user in by saving their id in session
             flash("Registration successful! Welcome to your dashboard.", "success")
-            return redirect(url_for('dashboard'))  # Redirect to dashboard
+            return redirect(url_for("dashboard"))
         except:
             db.session.rollback()
             flash("Registration failed. Please try again later.", "danger")
-            return render_template('register.html', form=form)
-                
-    return render_template('register.html', form=form)
+            return render_template("register.html", form=form)
+
+    return render_template("register.html", form=form)
 
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route("/login", methods=["GET", "POST"])
 def login():
+    """Handles user login. Checks credeintials."""
     if request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("password")
-        
+
         user = User.query.filter_by(email=email).first()
 
         if user and bcrypt.check_password_hash(user.password, password):
-            session['user_id'] = user.id
+            session["user_id"] = user.id
             flash("Login successful!", "success")
-            return redirect(url_for('dashboard'))  # redirect to dashboard
+            return redirect(url_for("dashboard"))
 
         else:
-            flash("Login failed! Please check your login details and try again.", "danger")
-    return render_template('login.html')
+            flash(
+                "Login failed! Please check your login details and try again.", "danger"
+            )
+    return render_template("login.html")
 
-# Create a moodboard
-@app.route('/create_moodboard', methods=['GET', 'POST'])
+
+@app.route("/create_moodboard", methods=["GET", "POST"])
 def create_moodboard():
+    """Creates a new moodboard."""
     moods = Mood.query.all()
     mood_choices = [(mood.mood_name, mood.mood_name.capitalize()) for mood in moods]
 
@@ -104,14 +132,13 @@ def create_moodboard():
         description = form.description.data
         mood_name = form.mood.data
 
-        user_id = session['user_id']  
+        user_id = session["user_id"]
 
         moodboard = Moodboard(title=title, description=description, user_id=user_id)
 
-        for image_url in request.form.getlist('selected_images[]'):
+        for image_url in request.form.getlist("selected_images[]"):
             image = Photo(photo_url=image_url)
             moodboard.photos.append(image)
-
 
         mood = Mood.query.filter_by(mood_name=mood_name).first()
         moodboard.mood = mood
@@ -120,7 +147,9 @@ def create_moodboard():
             db.session.add(moodboard)
             db.session.commit()
             flash("Moodboard created successfully!", "success")
-            return redirect(url_for('view_moodboard_with_images', moodboard_id=moodboard.id))
+            return redirect(
+                url_for("view_moodboard_with_images", moodboard_id=moodboard.id)
+            )
 
         except Exception as e:
             db.session.rollback()
@@ -132,11 +161,12 @@ def create_moodboard():
                 for error in errors:
                     flash(f"Error in {field}: {error}", "danger")
 
-    return render_template('create_moodboard.html', form=form)
+    return render_template("create_moodboard.html", form=form)
 
-# Route for editing a moodboard:
-@app.route('/moodboard/<int:moodboard_id>/edit', methods=['GET', 'POST'])
+
+@app.route("/moodboard/<int:moodboard_id>/edit", methods=["GET", "POST"])
 def edit_moodboard(moodboard_id):
+    """Edit an existing moodboard."""
     moodboard = Moodboard.query.get_or_404(moodboard_id)
     selected_images = moodboard.photos
     form = CreateMoodboardForm(obj=moodboard)  # Prefill form with current data
@@ -151,73 +181,171 @@ def edit_moodboard(moodboard_id):
         moodboard.description = form.description.data
         mood = Mood.query.filter_by(mood_name=form.mood.data).first()
         moodboard.mood_id = mood.id
-        db.session.commit()
-        flash("Moodboard updated successfully!", "success")
-        return redirect(url_for('view_moodboard', moodboard_id=moodboard.id))
 
-    return render_template('edit_moodboard_images.html', moodboard=moodboard, selected_images=selected_images, form=form)
+        # Handling the images:
+        current_images = {photo.photo_url for photo in selected_images}
+        submitted_images = set(request.form.getlist("selected_images[]"))
+
+        # Remove images that are not in the submitted list
+        for image in current_images - submitted_images:
+            photo = Photo.query.filter_by(photo_url=image).first()
+            if photo:
+                moodboard.photos.remove(photo)
+                db.session.delete(photo)  # Deleting the photo
+
+        # Add new images that are not in the current list
+        for image in submitted_images - current_images:
+            existing_photo = Photo.query.filter_by(photo_url=image).first()
+            if not existing_photo:
+                new_photo = Photo(photo_url=image)
+                moodboard.photos.append(new_photo)
+                db.session.add(new_photo)
+            else:
+                moodboard.photos.append(
+                    existing_photo
+                )  # Attach the existing image to the moodboard
+
+        try:
+            db.session.commit()
+            flash("Moodboard updated successfully!", "success")
+            return redirect(
+                url_for("view_moodboard_with_images", moodboard_id=moodboard.id)
+            )
+        except Exception as e:
+            db.session.rollback()
+            print("Error updating moodboard:", e)
+            flash("Error updating moodboard. Please try again later.", "danger")
+
+    return render_template(
+        "edit_moodboard_images.html",
+        moodboard=moodboard,
+        selected_images=selected_images,
+        form=form,
+    )
 
 
-# Handles Unsplash API searches
-@app.route('/search_photos', methods=['GET'])
+@app.route("/search_photos", methods=["GET"])
 def search_photos():
-    query = request.args.get('query')  # Get the search query from the user
-    page = request.args.get('page', default=1, type=int)  # Get the page number (default: 1)
-    per_page = request.args.get('per_page', default=10, type=int)  # Number of items per page (default: 10)
+    """Search for photos using Unsplash API. Returns photos based on query"""
+    query = request.args.get("query")
+    page = request.args.get("page", default=1, type=int)
+    per_page = request.args.get("per_page", default=10, type=int)
 
-    # Make a request to the Unsplash API to search for photos
-    unsplash_access_key = os.environ.get('UNSPLASH_API_KEY')
-    
+    # Make request to the Unsplash API to search for photos
+    unsplash_access_key = os.environ.get("UNSPLASH_API_KEY")
+
     if not unsplash_access_key:
-        return jsonify({'error': 'Unsplash API key not found'}), 500
-    
-    url = f'https://api.unsplash.com/search/photos?page={page}&per_page={per_page}&query={query}'
+        return jsonify({"error": "Unsplash API key not found"}), 500
+
+    url = f"https://api.unsplash.com/search/photos?page={page}&per_page={per_page}&query={query}"
     headers = {
-        'Authorization': f'Client-ID {unsplash_access_key}',
+        "Authorization": f"Client-ID {unsplash_access_key}",
     }
     response = requests.get(url, headers=headers)
 
     if response.status_code == 200:
         data = response.json()
-        photos = data['results']
+        photos = data["results"]
         return jsonify(photos=photos)  # Return photos as JSON data
     else:
-        return jsonify({'error': 'Error fetching photos from Unsplash'}), 500
+        return jsonify({"error": "Error fetching photos from Unsplash"}), 500
 
 
-# Route for adding images
-@app.route('/add_images/<int:moodboard_id>', methods=['GET', 'POST'])
-def add_images_to_moodboard(moodboard_id):
+@app.route("/add_image_to_moodboard/<int:moodboard_id>", methods=["POST"])
+def add_image_to_moodboard(moodboard_id):
+    """Add an image to specific moodboard. Image identified by url"""
     moodboard = Moodboard.query.get_or_404(moodboard_id)
-    return render_template('add_images.html', moodboard=moodboard)
+    image_url = request.json.get("image_url")
 
-# Viewing a Moodboard with Images:
-@app.route('/moodboard/<int:moodboard_id>/view', methods=['GET'])
+    if not image_url:
+        return jsonify({"error": "No image URL provided"}), 400
+
+    # Check if image already exists
+    existing_image = Photo.query.filter_by(photo_url=image_url).first()
+    if not existing_image:
+        new_image = Photo(photo_url=image_url)
+        moodboard.photos.append(new_image)
+        db.session.add(new_image)
+    else:
+        if existing_image not in moodboard.photos:
+            moodboard.photos.append(existing_image)
+
+    db.session.commit()
+
+    return jsonify({"message": "Image added successfully"}), 200
+
+
+@app.route("/moodboard/<int:moodboard_id>/view", methods=["GET"])
 def view_moodboard_with_images(moodboard_id):
+    """View a moodboard display"""
     moodboard = Moodboard.query.get_or_404(moodboard_id)
-    print(moodboard)  # Check if the moodboard is being fetched correctly
+    print(moodboard)
     selected_images = moodboard.photos
-    print(selected_images)  # Check if photos are being fetched correctly
-    return render_template('moodboard_with_images.html', moodboard=moodboard, selected_images=selected_images)
+    print(selected_images)
+    return render_template(
+        "moodboard_with_images.html",
+        moodboard=moodboard,
+        selected_images=selected_images,
+    )
 
 
-@app.route('/moodboard/<int:moodboard_id>/edit_images', methods=['GET', 'POST'])
-def edit_moodboard_images(moodboard_id):
+@app.route("/moodboard/<int:moodboard_id>/delete_image/<int:photo_id>", methods=["GET"])
+def delete_image(moodboard_id, photo_id):
+    """Delete a specific image from a moodboard."""
+    photo = Photo.query.get_or_404(photo_id)
+    if not photo:
+        flash("Photo not found", "danger")
+        return redirect(url_for("edit_moodboard", moodboard_id=moodboard_id))
+
+    try:
+        db.session.delete(photo)
+        db.session.commit()
+        flash("Photo deleted successfully", "success")
+    except Exception as e:
+        print(e)
+        db.session.rollback()
+        flash("An error occurred while deleting the photo", "danger")
+
+    return redirect(url_for("edit_moodboard", moodboard_id=moodboard_id))
+
+
+@app.route("/delete_moodboard/<int:moodboard_id>", methods=["GET", "POST"])
+def delete_moodboard(moodboard_id):
+    """Deletes moodboard and all it's images"""
+    # Check if user is logged in
+    if "user_id" not in session:
+        flash("Please login first.", "danger")
+        return redirect(url_for("login"))
+
+    # Fetch the moodboard
     moodboard = Moodboard.query.get_or_404(moodboard_id)
-    selected_images = moodboard.photos  # Query selected images for this moodboard
-    return render_template('edit_moodboard_images.html', moodboard=moodboard, selected_images=selected_images)
+
+    # Check if the logged in user has permissions to delete the moodboard
+    if session["user_id"] != moodboard.user_id:
+        flash("You do not have permissions to delete this moodboard.", "danger")
+        return redirect(url_for("index"))
+
+    for photo in moodboard.photos:
+        db.session.delete(photo)
+
+    db.session.delete(moodboard)
+    db.session.commit()
+
+    flash("Moodboard deleted successfully.", "success")
+    return redirect(url_for("dashboard"))
 
 
-@app.route('/logout')
+@app.route("/logout")
 def logout():
-    session.pop('user_id', None)
+    """Logs out the user and clears the session"""
+    session.pop("user_id", None)
     flash("You've been logged out!", "success")
-    return redirect(url_for('index'))
+    return redirect(url_for("index"))
 
 
 with app.app_context():
     db.create_all()
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.debug = True
     app.run()
