@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>{{ moodboard.title }}</h2>
+<p>Description: {{ moodboard.description }}</p>
+<p>Mood: {{ moodboard.mood.mood_name }}</p> <!-- This assumes a 'mood_name' attribute in your Mood model -->
+<!-- Details and photos will be going here -->
+
+<a href="{{ url_for('edit_moodboard', moodboard_id=moodboard.id) }}">Edit this Moodboard</a>
+{% endblock %}

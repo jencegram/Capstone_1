@@ -5,4 +5,10 @@
 {% block content %}
 <h2>Welcome to your Dashboard, {{ user_name }}!</h2>
 <!-- Misc. information to be added here -->
+<a href="{{ url_for('create_moodboard') }}" class="btn">Create Moodboard</a>
+
+{% for moodboard in moodboards %}
+    <a href="{{ url_for('view_moodboard', moodboard_id=moodboard.id) }}">{{ moodboard.title }}</a><br>
+{% endfor %}
+
 {% endblock %}

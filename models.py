@@ -20,12 +20,14 @@ class Mood(db.Model):
 class Moodboard(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text, nullable=True)  # Add description field
     
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     
     mood_id = db.Column(db.Integer, db.ForeignKey('mood.id'), nullable=False)
     
-    photos = db.relationship('Photo', backref='moodboard', lazy=True)  # This will allow moodboard.photos querying
+    photos = db.relationship('Photo', backref='moodboard', lazy=True)
+
 
 # Photo Model
 class Photo(db.Model):

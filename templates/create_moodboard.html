@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Create New Moodboard</h2>
+<form method="post">
+    {{ form.csrf_token }}
+    
+    {{ form.title.label }}: {{ form.title() }}<br>
+    {{ form.description.label }}: {{ form.description() }}<br>
+    {{ form.mood.label }}: {{ form.mood() }}<br>
+
+    <input type="submit" value="Create Moodboard">
+</form>
+{% endblock %}
