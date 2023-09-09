@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>{{ moodboard.title }}</h2>
+<p>Description: {{ moodboard.description }}</p>
+<p>Mood: {{ moodboard.mood.mood_name }}</p>
+
+<h3>Selected Images:</h3>
+<div class="row">
+  {% for image in selected_images %}
+    <img src="{{ image.photo_url }}" alt="Moodboard Image">
+  {% endfor %}
+
+
+</div>
+
+<a href="{{ url_for('edit_moodboard_images', moodboard_id=moodboard.id) }}">Edit Selected Images</a>
+{% endblock %}

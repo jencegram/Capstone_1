@@ -8,8 +8,6 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     moodboards = db.relationship('Moodboard', backref='user', lazy=True)
 
-
-
 # Mood Model
 class Mood(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -28,9 +26,8 @@ class Moodboard(db.Model):
     
     photos = db.relationship('Photo', backref='moodboard', lazy=True)
 
-
 # Photo Model
 class Photo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    photo_url = db.Column(db.String(255), nullable=False)
+    photo_url = db.Column(db.Text, nullable=False)
     moodboard_id = db.Column(db.Integer, db.ForeignKey('moodboard.id'), nullable=False)

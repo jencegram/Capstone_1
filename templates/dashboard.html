@@ -4,11 +4,23 @@
 
 {% block content %}
 <h2>Welcome to your Dashboard, {{ user_name }}!</h2>
-<!-- Misc. information to be added here -->
-<a href="{{ url_for('create_moodboard') }}" class="btn">Create Moodboard</a>
+<!-- Create Moodboard Section -->
+<div class="create-moodboard-section">
+    <h3>Create Moodboard</h3>
+    <a href="{{ url_for('create_moodboard') }}" class="btn">Create Moodboard</a>
+</div>
+
+<!-- Display Moodboard Name Section -->
+<div class="moodboard-name-section">
+    {% if moodboard_name %}
+        <h3>Moodboard Created:</h3>
+        <p>{{ moodboard_name }}</p>
+    {% endif %}
+</div>
 
 {% for moodboard in moodboards %}
-    <a href="{{ url_for('view_moodboard', moodboard_id=moodboard.id) }}">{{ moodboard.title }}</a><br>
+    <a href="{{ url_for('view_moodboard_with_images', moodboard_id=moodboard.id) }}">{{ moodboard.title }}</a>
 {% endfor %}
+
 
 {% endblock %}

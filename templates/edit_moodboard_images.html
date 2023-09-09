@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Edit Selected Images for Moodboard: {{ moodboard.title }}</h2>
+
+<form method="post">
+    {{ form.hidden_tag() }}
+
+    <h3>Selected Images:</h3>
+    <div class="row">
+      {% for photo in selected_images %}
+      <div class="col-md-4 mb-4">
+          <div class="card">
+              <img src="{{ photo.photo_url }}" class="card-img-top" alt="{{ photo.description }}">
+              <div class="card-body">
+                  <h5 class="card-title">{{ photo.description }}</h5>
+              </div>
+          </div>
+      </div>
+      {% endfor %}
+      
+    </div>
+
+    <input type="submit" value="Save Changes" class="btn btn-primary">
+</form>
+
+  
+{% endblock %}

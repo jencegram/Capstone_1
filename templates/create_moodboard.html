@@ -2,13 +2,129 @@
 
 {% block content %}
 <h2>Create New Moodboard</h2>
-<form method="post">
-    {{ form.csrf_token }}
-    
-    {{ form.title.label }}: {{ form.title() }}<br>
-    {{ form.description.label }}: {{ form.description() }}<br>
-    {{ form.mood.label }}: {{ form.mood() }}<br>
 
-    <input type="submit" value="Create Moodboard">
+<form method="post" id="create-moodboard-form" action="{{ url_for('create_moodboard') }}">
+    {{ form.csrf_token }}
+
+    <!-- Form fields for title, description, and mood -->
+    <label for="title">Title:</label>
+    <input type="text" id="title" name="title" required><br>
+
+    <label for="description">Description:</label>
+    <textarea id="description" name="description" required></textarea><br>
+
+    <label for="mood">Mood:</label>
+    <select id="mood" name="mood" required>
+        {% for mood_choice in form.mood.choices %}
+            <option value="{{ mood_choice[0] }}">{{ mood_choice[1] }}</option>
+        {% endfor %}
+    </select><br>
+
+    <!-- Search for Images -->
+    <label for="image-search">Search for Images</label>
+    <div class="input-group mb-3">
+        <input type="text" id="image-search" name="image_search" class="form-control">
+        <div class="input-group-append">
+            <button class="btn btn-primary" type="button" onclick="searchImages()">Search</button>
+        </div>
+    </div>
+
+    <!-- Display selected images -->
+    <div id="selected-images-preview"></div>
+
+    <!-- Submit -->
+    <button type="button" class="btn btn-success" onclick="handleFormSubmit()">Create!</button>
+
 </form>
+
+<script>
+  let selectedImages = []; // Array to store selected image URLs
+
+  function searchImages() {
+      // JavaScript function to handle image search
+      const query = document.getElementById('image-search').value;
+
+      // Make an AJAX request to your /search_photos route
+      fetch(`/search_photos?query=${query}`)
+          .then(response => response.json())
+          .then(data => {
+              // Process search results and update the selected images
+              const selectedImagesContainer = document.getElementById('selected-images-preview');
+              selectedImagesContainer.innerHTML = ''; // Clear previous images
+
+
+              if (data && data.photos && data.photos.length > 0) {
+                  data.photos.forEach(photo => {
+                      const imageContainer = document.createElement('div');
+                      imageContainer.className = 'selected-image-container';
+                      const image = document.createElement('img');
+                      image.src = photo.urls.regular;
+                      image.alt = photo.alt_description;
+                      image.width = 250; // Set image width to 300 pixels
+                      image.height = 250; // Set image height to 300 pixels
+                      imageContainer.appendChild(image);
+
+                      // Attach a click event to each image for selection
+                      image.addEventListener('click', () => toggleSelectImage(image, photo.urls.regular));
+
+                      selectedImagesContainer.appendChild(imageContainer);
+                  });
+              } else {
+                  selectedImagesContainer.innerHTML = '<p>No Images Found</p>';
+              }
+          })
+          .catch(error => {
+              console.error('Error fetching photos:', error);
+          });
+  }
+
+  // Function to toggle image selection
+  function toggleSelectImage(image, imageUrl) {
+      const index = selectedImages.indexOf(imageUrl);
+      if (index === -1) {
+          // Image is not selected, so add it to the selectedImages array
+          selectedImages.push(imageUrl);
+          image.classList.add('selected-image'); 
+      } else {
+          // Image is already selected, so remove it from the selectedImages array
+          selectedImages.splice(index, 1);
+          image.classList.remove('selected-image'); 
+      }
+  }
+
+   // Add selected images to the form
+   function addSelectedImagesToForm() {
+    const selectedImagesPreview = document.getElementById('selected-images-preview');
+
+    // Clear previous selections
+    selectedImagesPreview.innerHTML = '';
+
+    // Add selected images as hidden input fields
+    selectedImages.forEach(imageUrl => {
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'selected_images[]';  // Array for multiple images
+        hiddenInput.value = imageUrl;
+        selectedImagesPreview.appendChild(hiddenInput);
+    });
+}
+
+// Function to handle form submission
+function handleFormSubmit() {
+    // Add the selected images to the form
+    addSelectedImagesToForm();
+
+    // Then, submit the form
+    const form = document.getElementById('create-moodboard-form');
+    form.submit();
+}
+</script>
+
+<style>
+  /* Highlight style for selected images */
+  .selected-image {
+      border: 2px solid blue; /* Blue border for selected images */
+  }
+</style>
+
 {% endblock %}

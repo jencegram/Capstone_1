@@ -12,10 +12,36 @@
         {{ form.description.label(class="form-control-label") }}
         {{ form.description(class="form-control") }}
     </div>
+    
+    <!-- Add the search input field for image search -->
+    <div class="form-group">
+        <label for="image-search">Search for Images</label>
+        <div class="input-group mb-3">
+            <input type="text" id="image-search" name="image_search" class="form-control">
+            <div class="input-group-append">
+                <button class="btn btn-primary" type="button" onclick="searchImages()">Search</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Display the selected image -->
+    <div class="form-group">
+        <strong>Selected Image:</strong>
+        <img src="" id="selected-image-url" alt="">
+        <p id="selected-image-description"></p>
+    </div>
+    
     <div class="form-group">
         {{ form.mood.label(class="form-control-label") }}
         {{ form.mood(class="form-control") }}
     </div>
+    
     <input type="submit" value="Save Changes" class="btn btn-primary">
 </form>
+
+<script>
+function searchImages() {
+    // Image search will go here
+}
+</script>
 {% endblock %}
