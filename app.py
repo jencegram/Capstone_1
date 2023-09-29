@@ -147,9 +147,8 @@ def create_moodboard():
             db.session.add(moodboard)
             db.session.commit()
             flash("Moodboard created successfully!", "success")
-            return redirect(
-                url_for("view_moodboard_with_images", moodboard_id=moodboard.id)
-            )
+            return redirect(url_for("dashboard"))
+
 
         except Exception as e:
             db.session.rollback()
@@ -342,6 +341,20 @@ def logout():
     flash("You've been logged out!", "success")
     return redirect(url_for("index"))
 
+@app.cli.command("seed-db")
+def seed_db():
+    """Seed database with predefined moods."""
+    moods = ["Happy", "Sad", "Joyful", "Inspired", "Angry", "Anxious"]
+
+    for mood_name in moods:
+        # Check if the mood already exists 
+        existing_mood = Mood.query.filter_by(mood_name=mood_name).first()
+        if not existing_mood:
+            mood = Mood(mood_name=mood_name)
+            db.session.add(mood)
+    
+    db.session.commit()
+    print("Database seeded")
 
 with app.app_context():
     db.create_all()

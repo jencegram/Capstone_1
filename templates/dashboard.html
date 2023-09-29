@@ -6,25 +6,21 @@
 <div class="dashboard-container"> 
     <h2>Welcome to your Dashboard, {{ user_name }}!</h2>
 
-    <!-- Create Moodboard Section -->
-    <div class="create-moodboard-section">
-        <h3>Create Moodboard</h3>
-        <a href="{{ url_for('create_moodboard') }}" class="btn">Create Moodboard</a>
-    </div>
+    <h2>Your Moodboards</h2>
 
-    <!-- Display Moodboard Name Section -->
-    <div class="moodboard-name-section">
-        {% if moodboard_name %}
-        <h3>Moodboard Created:</h3>
-        <p>{{ moodboard_name }}</p>
-        {% endif %}
-    </div>
-
-    <ul class="moodboards-list">
-        {% for moodboard in moodboards %}
-        <li><a href="{{ url_for('view_moodboard_with_images', moodboard_id=moodboard.id) }}">{{ moodboard.title }}</a>
-        </li>
-        {% endfor %}
+    {% if moodboards %}
+    <ul>
+      {% for moodboard in moodboards %}
+      <li>
+        <h3><a href="{{ url_for('view_moodboard_with_images', moodboard_id=moodboard.id) }}">{{ moodboard.title }}</a></h3>
+      </li>
+      {% endfor %}
     </ul>
+    {% else %}
+    <p>You haven't created any moodboards yet.</p>
+    {% endif %}
+    
+    <a href="{{ url_for('create_moodboard') }}">Create a new Moodboard</a>
+
 </div> 
 {% endblock %}
